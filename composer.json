@@ -1,0 +1,39 @@
+{
+    "name": "lara-care/account-lockout",
+    "description": "Account lockout protection, event tracking, and self-service recovery for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "LaraCare\\AccountLockout\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LaraCare\\AccountLockout\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "jery123",
+            "email": "jerykhenson@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/auth": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaraCare\\AccountLockout\\AccountLockoutServiceProvider"
+            ]
+        }
+    }
+}
