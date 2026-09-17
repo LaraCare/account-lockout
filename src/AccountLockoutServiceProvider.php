@@ -6,6 +6,8 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use LaraCare\AccountLockout\Listeners\HandleFailedLogin;
+use LaraCare\AccountLockout\Events\AccountLocked;
+use LaraCare\AccountLockout\Listeners\SendLockoutNotification;
 
 class AccountLockoutServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,7 @@ class AccountLockoutServiceProvider extends ServiceProvider
 
         // Automatic authentication event tracking
         Event::listen(Failed::class, HandleFailedLogin::class);
+        Event::listen(AccountLocked::class, SendLockoutNotification::class);
     }
 
     public function register(): void
