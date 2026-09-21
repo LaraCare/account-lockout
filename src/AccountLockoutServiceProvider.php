@@ -15,15 +15,15 @@ class AccountLockoutServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/account-lockout.php' => config_path('account-lockout.php'),
+                dirname(__DIR__) . '/config/account-lockout.php' => config_path('account-lockout.php'),
             ], 'lara-care-lockout-config');
 
             $this->publishes([
-                __DIR__.'/../database/migrations/' => database_path('migrations'),
+                dirname(__DIR__) . '/database/migrations/' => database_path('migrations'),
             ], 'lara-care-lockout-migrations');
         }
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
 
         // Automatic authentication event tracking
         Event::listen(Failed::class, HandleFailedLogin::class);
@@ -32,7 +32,7 @@ class AccountLockoutServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/account-lockout.php', 'account-lockout');
+        $this->mergeConfigFrom(dirname(__DIR__) . '/config/account-lockout.php', 'account-lockout');
 
         $this->app->singleton(Services\LockoutManager::class, function ($app) {
             return new Services\LockoutManager(config('account-lockout'));
