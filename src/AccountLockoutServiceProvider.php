@@ -23,7 +23,11 @@ class AccountLockoutServiceProvider extends ServiceProvider
             ], 'lara-care-lockout-migrations');
         }
 
-        $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
+        // $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
+        // Fix route loading path
+        if (file_exists(dirname(__DIR__) . '/routes/web.php')) {
+            $this->loadRoutesFrom(dirname(__DIR__) . '/routes/web.php');
+        }                                   
 
         // Automatic authentication event tracking
         Event::listen(Failed::class, HandleFailedLogin::class);
