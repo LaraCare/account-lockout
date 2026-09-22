@@ -18,7 +18,12 @@ class AccountLockoutTest extends TestCase
         parent::setUp();
         
         $this->manager = app(LockoutManager::class);
-        $this->user = new User(['id' => 1, 'email' => 'developer@lara-care.dev']);
+        
+        // Fix mass assignment exception by using forceFill
+        $this->user = (new User)->forceFill([
+            'id' => 1,
+            'email' => 'developer@lara-care.dev',
+        ]);
     }
 
     /** @test */
