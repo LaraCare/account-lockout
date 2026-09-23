@@ -1,178 +1,118 @@
-# Lara-Care: Account Lockout
+# LaraCare Account Lockout
 
-<p align="center">
-  <img src="logo.png" alt="Lara-Care Account Lockout Logo" width="220" />
-</p>
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/lara-care/account-lockout.svg?style=flat-square)](https://packagist.org/packages/lara-care/account-lockout)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lara-care/account-lockout/run-tests.yml?branch=main&label=tests)](https://github.com/lara-care/account-lockout/actions)
+[![License](https://img.shields.io/packagist/l/lara-care/account-lockout.svg?style=flat-square)](LICENSE.md)
 
-<p align="center">
-  <a href="https://packagist.org/packages/lara-care/account-lockout"><img src="https://img.shields.io/packagist/v/lara-care/account-lockout.svg?style=flat-square" alt="Latest Version on Packagist"></a>
-  <a href="https://github.com/lara-care/account-lockout/actions"><img src="https://img.shields.io/github/actions/workflow/status/lara-care/account-lockout/run-tests.yml?branch=main&style=flat-square" alt="Build Status"></a>
-  <a href="https://packagist.org/packages/lara-care/account-lockout"><img src="https://img.shields.io/packagist/dt/lara-care/account-lockout.svg?style=flat-square" alt="Total Downloads"></a>
-  <a href="https://packagist.org/packages/lara-care/account-lockout"><img src="https://img.shields.io/packagist/l/lara-care/account-lockout.svg?style=flat-square" alt="License"></a>
-</p>
-
----
-
-**`lara-care/account-lockout`** is an intelligent security package for Laravel applications. It provides automated attempt tracking, progressive cooldown penalties for repeat offenders, signed URL self-recovery options, and rich domain events out of the box.
-
-Part of the **[Lara-Care](https://github.com/lara-care)** developer toolsuite.
+A robust account lockout and progressive cooldown penalty manager for Laravel applications. Protect your authentication routes against brute-force attacks with configurable attempt thresholds, progressive lockouts, and event dispatching.
 
 ---
 
 ## Features
 
-* **Automatic Auth Event Hooking:** Listens directly to Laravel's native authentication events without boilerplate.
-* **Progressive Cooldown Penalties:** Escalates lockout duration dynamically for repeat brute-force attempts (e.g., 15 mins → 1 hour → 24 hours).
-* **Flexible Tracking Strategies:** Track security thresholds by User Record, IP Address, or a hybrid of both.
-* **Self-Service signed URL Recovery:** Generates secure, temporary signed links allowing users to unlock their accounts via email.
-* **Extensible Event System:** Dispatches clean events (`AccountLocked`, `AccountUnlocked`, `FailedLoginAttempt`) for easy logging, Slack alerts, or SIEM integration.
-
----
-
-## Architecture Overview
-
-```
-+------------------+      Failed      +---------------------+      Threshold      +-------------------+
-| Auth Controller  | ---------------> | AccountLockout Hook | ------------------> | User Locked State |
-+------------------+                  +---------------------+      Exceeded       +-------------------+
-                                                 |                                          |
-                                                 v                                          v
-                                      +---------------------+                     +-------------------+
-                                      | Attempts Tracking   |                     | Send Magic Link / |
-                                      | (User ID / IP)      |                     | Cooldown Timer    |
-                                      +---------------------+                     +-------------------+
-```
+- 🔒 **Threshold-based Locking:** Temporarily lock accounts or IP addresses after a specified number of failed login attempts.
+- ⏱️ **Progressive Cooldowns:** Apply escalating lockout durations for repeat offenders (e.g., 15 mins → 60 mins → 24 hours).
+- 📢 **Event Driven:** Dispatches `AccountLocked` and `AccountUnlocked` events for audit logs or notifications.
+- 🔔 **Built-in Notifications:** Automatically trigger security alert emails/notifications when lockouts occur.
+- 🛠️ **Simple API:** Intuitive interface for recording failed attempts, checking status, and manually unlocking accounts.
 
 ---
 
 ## Installation
 
-Install the package via Composer:
+You can install the package via Composer:
 
 ```bash
 composer require lara-care/account-lockout
-```
-
-Publish and run the database migrations:
-
-```bash
-php artisan vendor:publish --tag="lara-care-lockout-migrations"
-php artisan migrate
-```
-
-*(Optional)* Publish the configuration file:
-
-```bash
-php artisan vendor:publish --tag="lara-care-lockout-config"
-```
-
----
-
-## Setup & Basic Usage
-
-### 1. Add Trait to your User Model
-
-Add the `HasAccountLockout` trait to your authenticatable model:
-
-```php
-namespace App\Models;
-
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use LaraCare\AccountLockout\Concerns\HasAccountLockout;
-
-class User extends Authenticatable
-{
-    use HasAccountLockout;
-}
-```
-
-### 2. Protect Routes via Middleware
-
-Add the `EnsureAccountIsNotLocked` middleware to your login routes:
-
-```php
-use LaraCare\AccountLockout\Http\Middleware\EnsureAccountIsNotLocked;
-
-Route::post('/login', [AuthController::class, 'store'])
-    ->middleware(EnsureAccountIsNotLocked::class);
-```
-
-### 3. Model Helpers
-
-```php
-// Check lockout status
-if ($user->isLockedOut()) {
-    $secondsLeft = $user->remainingLockoutTime();
-}
-
-// Lock manually
-$user->lockAccount(durationInMinutes: 30);
-
-// Unlock manually
-$user->unlockAccount();
-```
-
----
-
-## Configuration
-
-Below is the published `config/account-lockout.php` structure:
-
-```php
-return [
+Publish the configuration file:Bashphp artisan vendor:publish --tag="account-lockout-config"
+This will create a config/account-lockout.php file in your application root:PHPreturn [
     /*
-    | Maximum failed attempts before lock activation
+    |--------------------------------------------------------------------------
+    | Max Login Attempts
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of failed attempts allowed before triggering a lockout.
+    |
     */
     'max_attempts' => 5,
 
     /*
-    | Base lockout duration in minutes
+    |--------------------------------------------------------------------------
+    | Progressive Decay Minutes
+    |--------------------------------------------------------------------------
+    |
+    | Cooldown periods (in minutes) for consecutive lockouts.
+    |
     */
-    'lockout_duration' => 15,
-
-    /*
-    | Progressive penalties for repeat lockouts
-    */
-    'progressive' => [
-        'enabled' => true,
-        'penalties' => [
-            1 => 15,   // 1st lock: 15 minutes
-            2 => 60,   // 2nd lock: 1 hour
-            3 => 1440, // 3rd lock: 24 hours
-        ],
+    'cooldown_penalties' => [
+        1 => 15,  // First lockout: 15 minutes
+        2 => 60,  // Second lockout: 60 minutes
+        3 => 1440 // Third lockout: 24 hours
     ],
-
-    /*
-    | Strategy: 'user', 'ip', or 'user_and_ip'
-    */
-    'track_by' => 'user_and_ip',
-
-    /*
-    | Self-service magic link recovery settings
-    */
-    'unlock_via_email' => true,
-    'signed_url_expiration' => 30, // minutes
 ];
-```
+UsageRecording Failed Attempts & Checking LockoutsUse the LockoutManager service inside your login controllers or authentication actions:PHPuse LaraCare\AccountLockout\Services\LockoutManager;
 
+class LoginController extends Controller
+{
+    public function login(Request $request, LockoutManager $lockout)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        // Check if the user is currently locked out
+        if ($user && $lockout->isLocked($user)) {
+            return response()->json([
+                'message' => 'Your account is locked due to multiple failed login attempts.'
+            ], 423);
+        }
+
+        if (! Auth::attempt($request->only('email', 'password'))) {
+            if ($user) {
+                // Record the failed attempt
+                $lockout->recordFailedAttempt($user, $request->ip());
+            }
+
+            return response()->json(['message' => 'Invalid credentials.'], 401);
+        }
+
+        // Reset lockout count on successful login
+        $lockout->unlock($user);
+
+        return response()->json(['message' => 'Login successful.']);
+    }
+}
+EventsThe package fires the following events:EventDescriptionLaraCare\AccountLockout\Events\AccountLockedDispatched when an account reaches the maximum failed attempts threshold. Contains $event->user and $event->unlocksAt.LaraCare\AccountLockout\Events\AccountUnlockedDispatched when an account is manually unlocked or cleared. Contains $event->user.TestingRun the test suite using PHPUnit:Bashvendor/bin/phpunit
+LicenseThe MIT License (MIT). Please see License File for more information.
 ---
 
-## Testing
+### Create the file directly in terminal
 
-Run tests with PHPUnit/Orchestra Testbench:
+Run this command from your project root directory (`/home/popstudio/Documents/Personal/Projects/Lara-care/account-lockout`):
 
 ```bash
-composer test
-```
+cat << 'EOF' > README.md
+# LaraCare Account Lockout
 
+A robust account lockout and progressive cooldown penalty manager for Laravel applications. Protect your authentication routes against brute-force attacks with configurable attempt thresholds, progressive lockouts, and event dispatching.
+
+## Features
+- 🔒 **Threshold-based Locking:** Lock accounts after max failed attempts.
+- ⏱️ **Progressive Cooldowns:** Apply escalating lockout durations for repeat offenders.
+- 📢 **Event Driven:** Dispatches `AccountLocked` and `AccountUnlocked` events.
+- 🛠️ **Simple API:** Simple methods to record attempts, check status, and unlock.
+
+## Installation
+```bash
+composer require lara-care/account-lockout
+Publish configuration:Bashphp artisan vendor:publish --tag="account-lockout-config"
+TestingBashvendor/bin/phpunit
+LicenseThe MIT License (MIT).EOF
 ---
 
-## Security Vulnerabilities
+### Commit and Push
 
-If you discover a security vulnerability within this package, please report it directly via email to `security@lara-care.dev`.
+Once created, stage, commit, and push your new `README.md`:
 
----
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+```bash
+git add README.md
+git commit -m "docs: add initial README.md documentation"
+git push origin main
