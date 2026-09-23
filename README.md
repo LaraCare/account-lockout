@@ -24,8 +24,18 @@ You can install the package via Composer:
 
 ```bash
 composer require lara-care/account-lockout
-Publish the configuration file:Bashphp artisan vendor:publish --tag="account-lockout-config"
-This will create a config/account-lockout.php file in your application root:PHPreturn [
+```
+
+Publish the configuration file:
+
+```bash
+php artisan vendor:publish --tag="account-lockout-config"
+```
+
+This will create a `config/account-lockout.php` file in your application root:
+
+```php
+return [
     /*
     |--------------------------------------------------------------------------
     | Max Login Attempts
@@ -50,7 +60,16 @@ This will create a config/account-lockout.php file in your application root:PHPr
         3 => 1440 // Third lockout: 24 hours
     ],
 ];
-UsageRecording Failed Attempts & Checking LockoutsUse the LockoutManager service inside your login controllers or authentication actions:PHPuse LaraCare\AccountLockout\Services\LockoutManager;
+```
+
+## Usage
+
+### Recording Failed Attempts & Checking Lockouts
+
+Use the `LockoutManager` service inside your login controllers or authentication actions:
+
+```php
+use LaraCare\AccountLockout\Services\LockoutManager;
 
 class LoginController extends Controller
 {
@@ -80,39 +99,25 @@ class LoginController extends Controller
         return response()->json(['message' => 'Login successful.']);
     }
 }
-EventsThe package fires the following events:EventDescriptionLaraCare\AccountLockout\Events\AccountLockedDispatched when an account reaches the maximum failed attempts threshold. Contains $event->user and $event->unlocksAt.LaraCare\AccountLockout\Events\AccountUnlockedDispatched when an account is manually unlocked or cleared. Contains $event->user.TestingRun the test suite using PHPUnit:Bashvendor/bin/phpunit
-LicenseThe MIT License (MIT). Please see License File for more information.
----
+```
 
-### Create the file directly in terminal
+## Events
 
-Run this command from your project root directory (`/home/popstudio/Documents/Personal/Projects/Lara-care/account-lockout`):
+The package fires the following events:
 
-```bash
-cat << 'EOF' > README.md
-# LaraCare Account Lockout
+| Event | Description |
+|---|---|
+| `LaraCare\AccountLockout\Events\AccountLocked` | Dispatched when an account reaches the maximum failed attempts threshold. Contains `$event->user` and `$event->unlocksAt`. |
+| `LaraCare\AccountLockout\Events\AccountUnlocked` | Dispatched when an account is manually unlocked or cleared. Contains `$event->user`. |
 
-A robust account lockout and progressive cooldown penalty manager for Laravel applications. Protect your authentication routes against brute-force attacks with configurable attempt thresholds, progressive lockouts, and event dispatching.
+## Testing
 
-## Features
-- 🔒 **Threshold-based Locking:** Lock accounts after max failed attempts.
-- ⏱️ **Progressive Cooldowns:** Apply escalating lockout durations for repeat offenders.
-- 📢 **Event Driven:** Dispatches `AccountLocked` and `AccountUnlocked` events.
-- 🛠️ **Simple API:** Simple methods to record attempts, check status, and unlock.
-
-## Installation
-```bash
-composer require lara-care/account-lockout
-Publish configuration:Bashphp artisan vendor:publish --tag="account-lockout-config"
-TestingBashvendor/bin/phpunit
-LicenseThe MIT License (MIT).EOF
----
-
-### Commit and Push
-
-Once created, stage, commit, and push your new `README.md`:
+Run the test suite using PHPUnit:
 
 ```bash
-git add README.md
-git commit -m "docs: add initial README.md documentation"
-git push origin main
+vendor/bin/phpunit
+```
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
