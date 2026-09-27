@@ -1,6 +1,6 @@
 # LaraCare Account Lockout
 
-![LaraCare Account Lockout Banner](art/poster.png)
+![LaraCare Account Lockout Banner](art/social-card.png)
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lara-care/account-lockout.svg?style=flat-square)](https://packagist.org/packages/lara-care/account-lockout)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lara-care/account-lockout/run-tests.yml?branch=main&label=tests)](https://github.com/lara-care/account-lockout/actions)
